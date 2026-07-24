@@ -8,6 +8,10 @@ public record LoginAdminModel
 
 public record LoginPatientModel
 {
-    public record Request(string Email, long Dni);
+    public class Request
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty; 
+    }
     public record Response(string? Token, string? Role);
 }

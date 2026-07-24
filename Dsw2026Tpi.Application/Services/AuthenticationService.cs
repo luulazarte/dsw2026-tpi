@@ -45,7 +45,7 @@ public class AuthenticationService : IAuthenticationService
 
         var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
 
-        var token  = _jwtService.GenerateToken(user.UserName!, role);
+        var token = _jwtService.GenerateToken(user.UserName!, role);
 
         return new LoginAdminModel.Response(
             token,
@@ -53,9 +53,33 @@ public class AuthenticationService : IAuthenticationService
         );
     }
 
-    public async Task<LoginPatientModel.Response> LoginPatient(LoginPatientModel.Response request)
+    public async Task<LoginPatientModel.Response> LoginPatient(LoginPatientModel.Request request)
     {
-        throw new NotImplementedException();
+        if (!request.Email.IsEmailValid()) throw new AuthenticationException();
+        var user = await _userManager.FindByEmailAsync(request.Email) ?? throw new AuthenticationException();
+        var result = await _signInManager.CheckPassword(user, request.Password);
+
+        if (!result)
+        {
+            _logger.LogError("Intento de login fallido para paciente: {Email}", request.Email);
+            throw new AuthenticationException();
+        }
+
+        var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
+
+        // Si necesitás validar estrictamente que sea paciente antes de darle el token:
+        if (role != Roles.Patient)
+        {
+            _logger.LogWarning("El usuario {Email} intentó ingresar por el login de paciente sin serlo.", request.Email);
+            throw new AuthenticationException();
+        }
+
+        var token = _jwtService.GenerateToken(user.UserName!, role);
+
+        return new LoginPatientModel.Response(
+            token,
+            role
+        );
     }
 
     public async Task<RegisterModel.Response> Register(RegisterModel.Request request)
