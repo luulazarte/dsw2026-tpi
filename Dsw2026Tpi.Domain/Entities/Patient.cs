@@ -8,6 +8,8 @@ namespace Dsw2026Tpi.Domain.Entities
 {
     public class Patient : EntityBase
     {
+        protected Patient() { 
+        }
         public String UserId { get; private set; }
         public String Dni {  get; private set; }
         public String FullName { get; private set; }
