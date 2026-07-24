@@ -1,0 +1,45 @@
+﻿using Dsw2026Tpi.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Dsw2026Tpi.Data.Configurations
+{
+    public class AppointmentConfiguration : IEntityTypeConfiguration<Appointment>
+    {
+        public void Configure(EntityTypeBuilder<Appointment> builder)
+        {
+            builder.ToTable("APPOINTMENT");
+
+            builder.HasKey(a => a.Id);
+
+            builder.Property(a => a.Reason)
+                .IsRequired()
+                .HasMaxLength(300);
+
+            builder.Property(a => a.Status)
+                .IsRequired()
+                .HasMaxLength(20);
+
+            
+            builder.Property<byte[]>("RowVersion").IsRowVersion();
+
+
+            builder.HasOne(a => a.AvailabilitySlot)
+                .WithOne()
+                .HasForeignKey<Appointment>(a => a.AvailabilitySlotId);
+                
+
+            builder.HasIndex(a => a.AvailabilitySlotId)
+                .IsUnique();
+
+
+            builder.HasOne(a => a.Patient)
+                .WithMany()
+                .HasForeignKey(a => a.PatientId);
+                
+        }
+    }
+}
