@@ -16,8 +16,14 @@ public class DoctorService : IDoctorService
 
     public async Task<Pagination<DoctorModel.Response>> GetAll(int pageSize, int pageIndex, string? name = null)
     {
-        var doctors = await _persistence.Paginate<Doctor, string>(pageSize, pageIndex, d => string.IsNullOrWhiteSpace(name) ||
-                                                   d.Name.Contains(name), x => x.Name, nameof(Doctor.Speciality));
+        var doctors = await _persistence.Paginate<Doctor, string>(
+            pageSize,
+            pageIndex,
+            
+            d => !d.Deleted && (string.IsNullOrWhiteSpace(name) || d.Name.Contains(name)),
+            x => x.Name,
+            nameof(Doctor.Speciality)
+        );
 
         return doctors.Map(d => new DoctorModel.Response(d.Id, d.Name, d.LicenseNumber,
             new DoctorModel.SpecialityDto(d.Speciality?.Id, d.Speciality?.Name)));
@@ -34,6 +40,10 @@ public class DoctorService : IDoctorService
     }
 
     public async Task Delete(Guid id)
+    {
+        throw new NotImplementedException();
+    }
+    public async Task<List<AvailabilityModel.Response>> GetAvailabilities(Guid doctorId)
     {
         throw new NotImplementedException();
     }

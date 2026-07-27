@@ -8,8 +8,8 @@ namespace Dsw2026Tpi.Application.Interfaces
 {
     public interface IAvailabilityService
     {
-        Task<Pagination<AvailabilityModel.Response>> GetAll(int pageSize, int pageIndex, Guid? ruleId = null);
-        Task<AvailabilityModel.Response> Create(AvailabilityModel.Request request);
-        Task Delete(Guid id);
+        
+        Task Create(AvailabilityModel.Request request);
+        Task Update(AvailabilityModel.Request request);
     }
 }
