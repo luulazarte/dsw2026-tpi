@@ -22,7 +22,8 @@ namespace Dsw2026Tpi.Application.Services
             var specialities = await _persistence.Paginate<Speciality, string>(
                 pageSize,
                 pageIndex,
-                s => string.IsNullOrWhiteSpace(name) || s.Name.Contains(name),
+     
+                s => !s.Deleted && (string.IsNullOrWhiteSpace(name) || s.Name.Contains(name)),
                 x => x.Name
             );
 

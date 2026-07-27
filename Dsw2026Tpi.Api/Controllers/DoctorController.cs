@@ -23,6 +23,15 @@ public class DoctorsController : AppController
         var result = await _doctorService.GetAll(pageSize, pageIndex, name);
         return Ok(result);
     }
+   
+    [HttpGet("{id}/availabilities")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAvailabilities(Guid id)
+    {
+        var result = await _doctorService.GetAvailabilities(id);
+        return Ok(result);
+    }
 
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
