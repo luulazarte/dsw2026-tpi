@@ -22,4 +22,19 @@ public class DoctorService : IDoctorService
         return doctors.Map(d => new DoctorModel.Response(d.Id, d.Name, d.LicenseNumber,
             new DoctorModel.SpecialityDto(d.Speciality?.Id, d.Speciality?.Name)));
     }
+
+    public async Task<DoctorModel.Response> Create(DoctorModel.Request request)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<DoctorModel.Response> Update(Guid id, DoctorModel.Request request)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task Delete(Guid id)
+    {
+        throw new NotImplementedException();
+    }
 }

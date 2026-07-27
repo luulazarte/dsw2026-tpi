@@ -1,26 +1,54 @@
-﻿using Dsw2026Tpi.Application.Interfaces;
-using Dsw2026Tpi.CrossCutting.Identity;
-using Microsoft.AspNetCore.Authorization;
+﻿using Dsw2026Tpi.Application.Dtos;
+using Dsw2026Tpi.Application.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Dsw2026Tpi.Api.Controllers;
 
-[Route("doctors")]
-[Authorize(Policy = Policies.AdminPolicy)]
-public class DoctorController : AppController
+[Route("api/doctors")]
+[ApiController]
+public class DoctorsController : AppController
 {
-    private readonly IDoctorService _service;
+    private readonly IDoctorService _doctorService;
 
-    public DoctorController(IDoctorService service)
+    public DoctorsController(IDoctorService doctorService)
     {
-        _service = service;
+        _doctorService = doctorService;
     }
 
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll([FromQuery]int pageSize, [FromQuery]int pageIndex, [FromQuery]string? name = null)
+    public async Task<IActionResult> GetAll([FromQuery] int pageSize = 10, [FromQuery] int pageIndex = 0, [FromQuery] string? name = null)
     {
-        var doctors = await _service.GetAll(pageSize, pageIndex, name);
-        return Ok(doctors);
+        var result = await _doctorService.GetAll(pageSize, pageIndex, name);
+        return Ok(result);
+    }
+
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Create([FromBody] DoctorModel.Request request)
+    {
+        var result = await _doctorService.Create(request);
+        return Ok(result);
+    }
+
+    [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Update(Guid id, [FromBody] DoctorModel.Request request)
+    {
+        var result = await _doctorService.Update(id, request);
+        return Ok(result);
+    }
+
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        await _doctorService.Delete(id);
+        return NoContent();
     }
 }
