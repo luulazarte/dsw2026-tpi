@@ -11,9 +11,7 @@ public class Program
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-       
-      
-
+    
         builder.AddSerilogConfiguration();
 
        
@@ -26,7 +24,9 @@ public class Program
         builder.Services.AddAppAuthentication(builder.Configuration);     
         builder.Services.AddAppCors(builder.Configuration);                 
         builder.Services.AddAppDependencies();                              
-        builder.Services.AddSwaggerConfiguration();                       
+        builder.Services.AddSwaggerConfiguration();
+
+        builder.Services.AddAppRateLimiting(builder.Configuration);
 
         builder.Services.AddHealthChecks();
 
@@ -51,6 +51,8 @@ public class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.UseRateLimiter();
 
         app.MapControllers();
         app.MapHealthChecks("/health-check");

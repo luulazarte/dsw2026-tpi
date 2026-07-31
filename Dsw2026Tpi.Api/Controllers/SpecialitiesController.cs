@@ -1,12 +1,15 @@
 ﻿using Dsw2026Tpi.Application.Dtos;
 using Dsw2026Tpi.Application.Interfaces;
-using Microsoft.AspNetCore.Mvc;
+using Dsw2026Tpi.CrossCutting.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Dsw2026Tpi.Api.Controllers
 {
     [Route("api/specialties")]
     [ApiController]
+    [Authorize]
     public class SpecialtiesController : AppController
     {
         private readonly ISpecialityService _specialityService;
@@ -25,6 +28,7 @@ namespace Dsw2026Tpi.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = Policies.AdminPolicy)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromBody] SpecialityModel.Request request)
@@ -34,6 +38,7 @@ namespace Dsw2026Tpi.Api.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = Policies.AdminPolicy)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -44,6 +49,7 @@ namespace Dsw2026Tpi.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = Policies.AdminPolicy)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(Guid id)
