@@ -1,13 +1,19 @@
 ﻿using Dsw2026Tpi.Domain.Enums;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Dsw2026Tpi.Application.Dtos
 {
     public record AppointmentModel
     {
-        public record Request(Guid AvailabilitySlotId, Guid PatientId, string Reason);
-        public record Response(Guid Id, Guid AvailabilitySlotId, Guid PatientId, string Reason, AppointmentStatus Status);
+ 
+        public record Request(Guid DoctorId, Guid AvailabilityId, PatientDto Patient, string Reason);
+
+        public record PatientDto(long Dni);
+
+      
+        public record PatientResponse(Guid Id, DateTime Date, TimeSpan StartTime, string DoctorName, string SpecialtyName, AppointmentStatus Status);
+
+    
+        public record SearchResponse(string Specialty, string Doctor, DateTime AvailableDate, TimeSpan AvailableTime);
     }
 }
