@@ -29,8 +29,7 @@ namespace Dsw2026Tpi.Application.Services
                 throw new Exception("validation_failed|El motivo debe tener al menos 5 caracteres.");
 
 
-            var doctor = await _persistence.GetById<Doctor>(request.DoctorId);
-            if (doctor == null || doctor.Deleted)
+            var doctor = await _persistence.GetById<Doctor>(request.DoctorId, "Speciality"); if (doctor == null || doctor.Deleted)
                 throw new Exception("validation_failed|El doctor especificado no existe.");
 
             var patient = await _persistence.First<Patient>(p => p.Dni == dniStr);
@@ -55,14 +54,15 @@ namespace Dsw2026Tpi.Application.Services
             slot.Book();
             await _persistence.Update(slot);
 
-         
+
             return new AppointmentModel.PatientResponse(
                 appointment.Id,
                 slot.SlotDate,
                 slot.StartTime,
                 doctor.Name,
-                "N/A",
+                doctor.Speciality?.Name ?? "N/A",
                 appointment.Status
+            
             );
         }
 
@@ -117,7 +117,7 @@ namespace Dsw2026Tpi.Application.Services
 
         public async Task<IEnumerable<AppointmentModel.SearchResponse>> GetAppointmentsByDate(DateTime date)
         {
-            // Búsqueda de turnos del día (GET /api/appointments?date=YYYY-MM-DD)
+            
             var appointments = await _persistence.GetFiltered<Appointment>(
                 a => a.AvailabilitySlot != null && a.AvailabilitySlot.SlotDate == date.Date,
                 "AvailabilitySlot", "AvailabilitySlot.AvailabilityRule.Doctor.Speciality"

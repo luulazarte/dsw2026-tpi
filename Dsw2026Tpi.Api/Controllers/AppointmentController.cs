@@ -11,7 +11,7 @@ namespace Dsw2026Tpi.Api.Controllers
         [ApiController]
         [Route("api/appointments")]
         [Authorize]
-    public class AppointmentsController : ControllerBase
+    public class AppointmentsController : AppController
         {
             private readonly IAppointmentService _appointmentService;
 
@@ -25,15 +25,11 @@ namespace Dsw2026Tpi.Api.Controllers
             [EnableRateLimiting("BookingPolicy")]
         public async Task<IActionResult> Create([FromBody] AppointmentModel.Request request)
         {
-            try
-            {
+            
                 var result = await _appointmentService.Create(request);
                 return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return ManejarErrorPersonalizado(ex);
-            }
+            
+           
         }
 
         [HttpGet("patient")]
@@ -48,15 +44,11 @@ namespace Dsw2026Tpi.Api.Controllers
             [Authorize(Policy = Policies.AdminPolicy)]
         public async Task<IActionResult> Cancel(Guid id)
             {
-                try
-                {
+                
                     await _appointmentService.Cancel(id);
                     return Ok("ok");
-                }
-                catch (Exception ex)
-                {
-                    return ManejarErrorPersonalizado(ex);
-                }
+                
+                
             }
 
             [HttpGet]
@@ -73,28 +65,6 @@ namespace Dsw2026Tpi.Api.Controllers
             {
             var result = await _appointmentService.SearchAppointments(specialtyId, doctorId, dni, date, pageSize, pageIndex);
             return Ok(result);
-        }
-
-          
-            private IActionResult ManejarErrorPersonalizado(Exception ex)
-            {
-                var partes = ex.Message.Split('|');
-                var errorType = partes.Length > 1 ? partes[0] : "SERVER_ERROR";
-                var errorMsg = partes.Length > 1 ? partes[1] : ex.Message;
-
-                var errorCode = errorType == "conflict" ? "APPOINTMENT_CONFLICT" : "BAD_REQUEST";
-
-                var errorResponse = new
-                {
-                    errorCode = errorCode,
-                    message = errorMsg,
-                    details = new List<object>
-                {
-                    new { field = "appointment", issue = errorType == "conflict" ? "slot_unavailable" : "validation_failed" }
-                }
-                };
-
-                return BadRequest(errorResponse);
             }
         }
     }

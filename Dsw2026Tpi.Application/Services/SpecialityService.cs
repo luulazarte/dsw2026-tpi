@@ -1,5 +1,6 @@
 ﻿using Dsw2026Tpi.Application.Dtos;
 using Dsw2026Tpi.Application.Interfaces;
+using Dsw2026Tpi.CrossCutting.Exceptions;
 using Dsw2026Tpi.Domain.Entities;
 using Dsw2026Tpi.Domain.Interfaces;
 using System;
@@ -41,14 +42,14 @@ namespace Dsw2026Tpi.Application.Services
 
         public async Task<SpecialityModel.Response> Update(Guid id, SpecialityModel.Request request)
         {
-            var specialityExistente = await _persistence.GetById<Speciality>(id);
-            if (specialityExistente == null) throw new Exception("Especialidad no encontrada");
-            //ESTO NO SE QUE ES. LO HACE PORQUE EN DOMINIO TENEMOS RESTRINGIDO (PRIVATE SET)
-            var specialityActualizada = new Speciality(request.Name, request.Description, id);
+            var speciality = await _persistence.GetById<Speciality>(id);
+            if (speciality == null || speciality.Deleted)
+                throw new EntityNotFoundException("Especialidad");
 
-            await _persistence.Update(specialityActualizada);
+            speciality.Update(request.Name, request.Description);
+            await _persistence.Update(speciality);
 
-            return new SpecialityModel.Response(specialityActualizada.Id, specialityActualizada.Name, specialityActualizada.Description);
+            return new SpecialityModel.Response(speciality.Id, speciality.Name, speciality.Description);
         }
 
         public async Task Delete(Guid id)

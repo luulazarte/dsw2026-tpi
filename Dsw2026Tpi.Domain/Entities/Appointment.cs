@@ -30,11 +30,23 @@ namespace Dsw2026Tpi.Domain.Entities
             Reason = reason;
             Status = AppointmentStatus.BOOKED;
         }
+        public void Attended()
+        {
+            Status = AppointmentStatus.ATTENDED;
+            AttendedAt = DateTime.Now;
+            UpdatedAt = DateTime.Now;
+        }
 
         public void Cancel()
         {
             Status = AppointmentStatus.CANCELLED;
             CancelledAt = DateTime.Now;
+            UpdatedAt = DateTime.Now;
+        }
+
+        public void NoShow()
+        {
+            Status = AppointmentStatus.NO_SHOW;
             UpdatedAt = DateTime.Now;
         }
 

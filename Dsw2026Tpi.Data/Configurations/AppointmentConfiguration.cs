@@ -20,6 +20,7 @@ namespace Dsw2026Tpi.Data.Configurations
                 .HasMaxLength(300);
 
             builder.Property(a => a.Status)
+                .HasConversion<string>()
                 .IsRequired()
                 .HasMaxLength(20);
 

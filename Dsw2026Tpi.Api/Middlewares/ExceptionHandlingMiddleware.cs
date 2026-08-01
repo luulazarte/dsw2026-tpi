@@ -37,11 +37,12 @@ public class ExceptionHandlingMiddleware
             new ErrorResponse(nameof(ErrorCodes.UNHANDLED_ERROR), ErrorCodes.UNHANDLED_ERROR);
         var status = ex switch
         {
-            ValidationException => HttpStatusCode.BadRequest,
-            EntityNotFoundException => HttpStatusCode.NotFound,
-            ConflictException or AuthenticationException => HttpStatusCode.Conflict,
-            AuthorizationException => HttpStatusCode.Unauthorized,
-            _ => HttpStatusCode.InternalServerError,
+            ValidationException => HttpStatusCode.BadRequest, 
+            EntityNotFoundException => HttpStatusCode.NotFound, 
+            ConflictException => HttpStatusCode.Conflict, 
+            AuthenticationException => HttpStatusCode.Unauthorized, 
+            AuthorizationException => HttpStatusCode.Forbidden, 
+            _ => HttpStatusCode.InternalServerError, 
         };
         var result = JsonSerializer.Serialize(error);
         context.Response.ContentType = "application/json";
