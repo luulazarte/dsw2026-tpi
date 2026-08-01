@@ -8,7 +8,7 @@ namespace Dsw2026Tpi.Application.Interfaces
 {
     public interface IAppointmentService
     {
-        Task Create(AppointmentModel.Request request);
+        Task<AppointmentModel.PatientResponse> Create(AppointmentModel.Request request);
         Task Cancel(Guid id);
         Task<IEnumerable<AppointmentModel.PatientResponse>> GetByPatientDni(long dni);
         Task<IEnumerable<AppointmentModel.SearchResponse>> GetAppointmentsByDate(DateTime date);

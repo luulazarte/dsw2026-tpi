@@ -15,6 +15,7 @@ namespace Dsw2026Tpi.Domain.Entities
         public string Reason { get; private set; }
         public AppointmentStatus Status { get; private set; }
         public DateTime? CancelledAt { get; private set; }
+        public DateTime? AttendedAt { get; private set; }
 
         #region Constructor for EF
 #pragma warning disable CS8618
