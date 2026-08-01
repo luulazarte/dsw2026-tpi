@@ -23,5 +23,12 @@ public class Doctor : EntityBase
         SpecialityId = specialityId;
 
     }
+    public void Update(string name, string licenseNumber, Guid specialityId)
+    {
+        Name = name;
+        LicenseNumber = licenseNumber;
+        SpecialityId = specialityId;
+        UpdatedAt = DateTime.Now;
+    }
 
 }

@@ -5,6 +5,8 @@ using Dsw2026Tpi.CrossCutting.Helpers;
 using Dsw2026Tpi.CrossCutting.Identity;
 using Dsw2026Tpi.CrossCutting.Resources;
 using Dsw2026Tpi.Data.Identity;
+using Dsw2026Tpi.Domain.Entities;
+using Dsw2026Tpi.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
@@ -17,18 +19,21 @@ public class AuthenticationService : IAuthenticationService
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly JwtService _jwtService;
     private readonly ILogger<AuthenticationService> _logger;
+    private readonly IPersistence _persistence;
 
     public AuthenticationService(UserManager<ApplicationUser> userManager,
         ISignInService signInManager,
         RoleManager<IdentityRole> roleManager,
         JwtService jwtService,
-        ILogger<AuthenticationService> logger)
+        ILogger<AuthenticationService> logger,
+        IPersistence persistence)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _roleManager = roleManager;
         _jwtService = jwtService;
         _logger = logger;
+        _persistence = persistence;
     }
 
     public async Task<LoginAdminModel.Response> LoginAdmin(LoginAdminModel.Request request)
@@ -55,31 +60,48 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<LoginPatientModel.Response> LoginPatient(LoginPatientModel.Request request)
     {
-        if (!request.Email.IsEmailValid()) throw new AuthenticationException();
-        var user = await _userManager.FindByEmailAsync(request.Email) ?? throw new AuthenticationException();
-        var result = await _signInManager.CheckPassword(user, request.Password);
+        
+        if (!request.Email.IsEmailValid())
+            throw new ValidationException("El email es obligatorio y debe ser válido.", nameof(ErrorCodes.VALIDATION_ERROR));
 
-        if (!result)
+        var dniStr = request.Dni.ToString();
+        if (dniStr.Length < 7 || dniStr.Length > 8)
+            throw new ValidationException("El DNI debe tener 7 u 8 dígitos.", nameof(ErrorCodes.VALIDATION_ERROR));
+
+        
+        var user = await _userManager.FindByEmailAsync(request.Email);
+
+        
+        if (user is null)
         {
-            _logger.LogError("Intento de login fallido para paciente: {Email}", request.Email);
-            throw new AuthenticationException();
+            user = new ApplicationUser
+            {
+                UserName = request.Email,
+                Email = request.Email,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            
+            var createResult = await _userManager.CreateAsync(user, $"Dni-{dniStr}-Ok");
+            if (!createResult.Succeeded)
+                throw new ConflictException(nameof(ErrorCodes.REGISTER_USER_CONFLICT), "No se pudo registrar el paciente.");
+
+            await _userManager.AddToRoleAsync(user, Roles.Patient);
+
+            
+            var patient = new Patient(Guid.Parse(user.Id), dniStr, request.Email);
+            await _persistence.Add(patient);
+
+            _logger.LogInformation("Paciente creado automáticamente: {Email}", request.Email);
         }
 
         var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
-
-        // Si necesitás validar estrictamente que sea paciente antes de darle el token:
         if (role != Roles.Patient)
-        {
-            _logger.LogWarning("El usuario {Email} intentó ingresar por el login de paciente sin serlo.", request.Email);
             throw new AuthenticationException();
-        }
 
         var token = _jwtService.GenerateToken(user.UserName!, role);
-
-        return new LoginPatientModel.Response(
-            token,
-            role
-        );
+        return new LoginPatientModel.Response(token, role);
     }
 
     public async Task<RegisterModel.Response> Register(RegisterModel.Request request)
