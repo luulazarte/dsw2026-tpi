@@ -19,14 +19,14 @@ public class AvailabilityController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] AvailabilityModel.Request request)
     {
-        await _availabilityService.Create(request);
-        return Ok();
+        var result = await _availabilityService.Create(request);
+        return Ok(result);
     }
 
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] AvailabilityModel.Request request)
     {
-        await _availabilityService.Update(request);
-        return Ok();
+        var result = await _availabilityService.Update(request);
+        return Ok(result);
     }
 }

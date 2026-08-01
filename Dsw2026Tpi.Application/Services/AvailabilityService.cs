@@ -31,17 +31,19 @@ namespace Dsw2026Tpi.Application.Services
             _persistence = persistence;
         }
 
-        public async Task Create(AvailabilityModel.Request request)
+        public async Task<List<AvailabilityModel.Response>> Create(AvailabilityModel.Request request)
         {
-            await GenerarDisponibilidades(request);
+            return await GenerarDisponibilidades(request);
         }
 
-        public async Task Update(AvailabilityModel.Request request)
+        // ---> ACÁ ESTÁ EL CAMBIO: Ahora devuelve la lista de DTOs <---
+        public async Task<List<AvailabilityModel.Response>> Update(AvailabilityModel.Request request)
         {
-            await GenerarDisponibilidades(request);
+            return await GenerarDisponibilidades(request);
         }
 
-        private async Task GenerarDisponibilidades(AvailabilityModel.Request request)
+        // ---> ACÁ ESTÁ EL CAMBIO: El método privado retorna List<AvailabilityModel.Response> <---
+        private async Task<List<AvailabilityModel.Response>> GenerarDisponibilidades(AvailabilityModel.Request request)
         {
             var doctor = await _persistence.GetById<Doctor>(request.DoctorId);
             if (doctor == null || doctor.Deleted)
@@ -51,6 +53,9 @@ namespace Dsw2026Tpi.Application.Services
 
             var hoy = DateTime.Today;
             var ultimoDiaMes = new DateTime(hoy.Year, hoy.Month, DateTime.DaysInMonth(hoy.Year, hoy.Month));
+
+            // ---> ACÁ ESTÁ EL CAMBIO: Inicializamos la lista que va a contener las respuestas <---
+            var response = new List<AvailabilityModel.Response>();
 
             foreach (var daySchedule in request.Days)
             {
@@ -73,8 +78,8 @@ namespace Dsw2026Tpi.Application.Services
                 var rule = new AvailabilityRule(
                     request.DoctorId,
                     hoy.Month,
-                    hoy.Year,
-                    daySchedule.Day,
+                    (short)hoy.Year,
+                    (short)diaBuscado,
                     startTime,
                     endTime
                 );
@@ -101,16 +106,26 @@ namespace Dsw2026Tpi.Application.Services
                             );
 
                             await _persistence.Add(slot);
+
+                            // ---> ACÁ ESTÁ EL CAMBIO: Agregamos el slot mapeado a la lista de respuesta usando tu record <---
+                            response.Add(new AvailabilityModel.Response(
+                                slot.Id,
+                                rule.Id,
+                                slot.SlotDate,
+                                slot.StartTime,
+                                slot.EndTime,
+                                slot.Status
+                            ));
+
                             horaActual = horaFinSlot;
                         }
                     }
                     fechaIteracion = fechaIteracion.AddDays(1);
                 }
             }
-        }
 
-        
-
+            // ---> ACÁ ESTÁ EL CAMBIO: Retornamos la lista con todos los slots generados <---
+            return response;
         }
     }
-
+}

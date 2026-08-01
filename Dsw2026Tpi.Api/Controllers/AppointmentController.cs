@@ -24,24 +24,24 @@ namespace Dsw2026Tpi.Api.Controllers
             [Authorize(Policy = Policies.PatientPolicy)]
             [EnableRateLimiting("BookingPolicy")]
         public async Task<IActionResult> Create([FromBody] AppointmentModel.Request request)
+        {
+            try
             {
-                try
-                {
-                    await _appointmentService.Create(request);
-                    return Ok();
-                }
-                catch (Exception ex)
-                {
-                    return ManejarErrorPersonalizado(ex);
-                }
+                var result = await _appointmentService.Create(request);
+                return Ok(result);
             }
+            catch (Exception ex)
+            {
+                return ManejarErrorPersonalizado(ex);
+            }
+        }
 
-            [HttpGet("patient")]
+        [HttpGet("patient")]
             [Authorize(Policy = Policies.AdminPolicy)]
         public async Task<IActionResult> GetPatientAppointments([FromQuery] long dni)
             {
-                var result = await _appointmentService.GetByPatientDni(dni);
-                return Ok(result);
+            var result = await _appointmentService.GetByPatientDni(dni);
+            return Ok(result);
             }
 
             [HttpDelete("{id:guid}")]
@@ -51,7 +51,7 @@ namespace Dsw2026Tpi.Api.Controllers
                 try
                 {
                     await _appointmentService.Cancel(id);
-                    return NoContent();
+                    return Ok("ok");
                 }
                 catch (Exception ex)
                 {
@@ -71,9 +71,9 @@ namespace Dsw2026Tpi.Api.Controllers
             [Authorize(Policy = Policies.AdminPolicy)]
         public async Task<IActionResult> Search([FromQuery] Guid? specialtyId, [FromQuery] Guid? doctorId, [FromQuery] long? dni, [FromQuery] DateTime? date, [FromQuery] int pageSize = 10, [FromQuery] int pageIndex = 0)
             {
-                var result = await _appointmentService.SearchAppointments(specialtyId, doctorId, dni, date, pageSize, pageIndex);
-                return Ok(result);
-            }
+            var result = await _appointmentService.SearchAppointments(specialtyId, doctorId, dni, date, pageSize, pageIndex);
+            return Ok(result);
+        }
 
           
             private IActionResult ManejarErrorPersonalizado(Exception ex)

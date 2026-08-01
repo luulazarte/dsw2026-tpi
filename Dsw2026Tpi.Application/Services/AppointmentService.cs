@@ -18,9 +18,9 @@ namespace Dsw2026Tpi.Application.Services
             _persistence = persistence;
         }
 
-        public async Task Create(AppointmentModel.Request request)
+        public async Task<AppointmentModel.PatientResponse> Create(AppointmentModel.Request request)
         {
-           
+
             var dniStr = request.Patient.Dni.ToString();
             if (dniStr.Length < 7 || dniStr.Length > 10)
                 throw new Exception("validation_failed|El DNI es obligatorio y debe tener entre 7 y 10 dígitos.");
@@ -28,7 +28,7 @@ namespace Dsw2026Tpi.Application.Services
             if (string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Length < 5)
                 throw new Exception("validation_failed|El motivo debe tener al menos 5 caracteres.");
 
-         
+
             var doctor = await _persistence.GetById<Doctor>(request.DoctorId);
             if (doctor == null || doctor.Deleted)
                 throw new Exception("validation_failed|El doctor especificado no existe.");
@@ -37,7 +37,7 @@ namespace Dsw2026Tpi.Application.Services
             if (patient == null)
                 throw new Exception("validation_failed|No existe un paciente registrado con ese DNI.");
 
-  
+
             var slot = await _persistence.GetById<AvailabilitySlot>(request.AvailabilityId);
             if (slot == null)
                 throw new Exception("validation_failed|El slot no existe.");
@@ -46,14 +46,24 @@ namespace Dsw2026Tpi.Application.Services
                 throw new Exception("validation_failed|No se permiten turnos en el pasado.");
 
             if (slot.Status != SlotStatus.AVAILABLE)
-                throw new Exception("conflict|Slot already booked"); 
+                throw new Exception("conflict|Slot already booked");
 
             var appointment = new Appointment(slot.Id, patient.Id, request.Reason);
             await _persistence.Add(appointment);
 
- 
+
             slot.Book();
             await _persistence.Update(slot);
+
+         
+            return new AppointmentModel.PatientResponse(
+                appointment.Id,
+                slot.SlotDate,
+                slot.StartTime,
+                doctor.Name,
+                "N/A",
+                appointment.Status
+            );
         }
 
         public async Task Cancel(Guid id)
