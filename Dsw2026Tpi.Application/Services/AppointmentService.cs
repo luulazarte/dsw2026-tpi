@@ -1,7 +1,11 @@
 ﻿using Dsw2026Tpi.Application.Dtos;
 using Dsw2026Tpi.Application.Interfaces;
+using Dsw2026Tpi.CrossCutting.Exceptions;
+using Dsw2026Tpi.CrossCutting.Resources;
 using Dsw2026Tpi.Domain.Entities;
 using Dsw2026Tpi.Domain.Enums;
+using Dsw2026Tpi.CrossCutting.Exceptions;
+using Dsw2026Tpi.CrossCutting.Resources;
 using Dsw2026Tpi.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -23,29 +27,28 @@ namespace Dsw2026Tpi.Application.Services
 
             var dniStr = request.Patient.Dni.ToString();
             if (dniStr.Length < 7 || dniStr.Length > 10)
-                throw new Exception("validation_failed|El DNI es obligatorio y debe tener entre 7 y 10 dígitos.");
+                throw new ValidationException("El DNI es obligatorio y debe tener entre 7 y 10 dígitos.", nameof(ErrorCodes.VALIDATION_ERROR));
 
             if (string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Length < 5)
-                throw new Exception("validation_failed|El motivo debe tener al menos 5 caracteres.");
+                throw new ValidationException("El motivo debe tener al menos 5 caracteres.", nameof(ErrorCodes.VALIDATION_ERROR));
 
-
-            var doctor = await _persistence.GetById<Doctor>(request.DoctorId, "Speciality"); if (doctor == null || doctor.Deleted)
-                throw new Exception("validation_failed|El doctor especificado no existe.");
+            var doctor = await _persistence.GetById<Doctor>(request.DoctorId);
+            if (doctor == null || doctor.Deleted)
+                throw new ValidationException("El doctor especificado no existe.", nameof(ErrorCodes.VALIDATION_ERROR));
 
             var patient = await _persistence.First<Patient>(p => p.Dni == dniStr);
             if (patient == null)
-                throw new Exception("validation_failed|No existe un paciente registrado con ese DNI.");
+                throw new ValidationException("No existe un paciente registrado con ese DNI.", nameof(ErrorCodes.VALIDATION_ERROR));
 
-
-            var slot = await _persistence.GetById<AvailabilitySlot>(request.AvailabilityId);
+            var slot = await _persistence.GetById<AvailabilitySlot>(request.AvailabilitySlotId);
             if (slot == null)
-                throw new Exception("validation_failed|El slot no existe.");
+                throw new ValidationException("El slot no existe.", nameof(ErrorCodes.VALIDATION_ERROR));
 
             if (slot.SlotDate < DateTime.Today || (slot.SlotDate == DateTime.Today && slot.StartTime < DateTime.Now.TimeOfDay))
-                throw new Exception("validation_failed|No se permiten turnos en el pasado.");
+                throw new ValidationException("No se permiten turnos en el pasado.", nameof(ErrorCodes.VALIDATION_ERROR));
 
             if (slot.Status != SlotStatus.AVAILABLE)
-                throw new Exception("conflict|Slot already booked");
+                throw new ConflictException("APPOINTMENT_CONFLICT", "Slot already booked");
 
             var appointment = new Appointment(slot.Id, patient.Id, request.Reason);
             await _persistence.Add(appointment);
@@ -70,10 +73,10 @@ namespace Dsw2026Tpi.Application.Services
         {
             var appointment = await _persistence.GetById<Appointment>(id);
             if (appointment == null)
-                throw new Exception("validation_failed|Turno no encontrado.");
+                throw new EntityNotFoundException("Turno");
 
             if (appointment.Status != AppointmentStatus.BOOKED)
-                throw new Exception("validation_failed|Solo se puede cancelar un turno en estado BOOKED.");
+                throw new ValidationException("Solo se puede cancelar un turno en estado BOOKED.", nameof(ErrorCodes.VALIDATION_ERROR));
 
             appointment.Cancel();
             await _persistence.Update(appointment);
@@ -115,17 +118,17 @@ namespace Dsw2026Tpi.Application.Services
         }
 
 
-        public async Task<IEnumerable<AppointmentModel.SearchResponse>> GetAppointmentsByDate(DateTime date)
+        public async Task<Pagination<AppointmentModel.SearchResponse>> GetAppointmentsByDate(DateTime date, int pageSize, int pageIndex)
         {
-            
-            var appointments = await _persistence.GetFiltered<Appointment>(
+            var pagedData = await _persistence.Paginate<Appointment, DateTime>(
+                pageSize,
+                pageIndex,
                 a => a.AvailabilitySlot != null && a.AvailabilitySlot.SlotDate == date.Date,
+                a => a.AvailabilitySlot.SlotDate,
                 "AvailabilitySlot", "AvailabilitySlot.AvailabilityRule.Doctor.Speciality"
             );
 
-            if (appointments == null) return new List<AppointmentModel.SearchResponse>();
-
-            return appointments.Select(a => new AppointmentModel.SearchResponse(
+            return pagedData.Map(a => new AppointmentModel.SearchResponse(
                 a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Speciality?.Name ?? "N/A",
                 a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Name ?? "N/A",
                 a.AvailabilitySlot.SlotDate,

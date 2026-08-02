@@ -11,7 +11,7 @@ namespace Dsw2026Tpi.Application.Interfaces
         Task<AppointmentModel.PatientResponse> Create(AppointmentModel.Request request);
         Task Cancel(Guid id);
         Task<IEnumerable<AppointmentModel.PatientResponse>> GetByPatientDni(long dni);
-        Task<IEnumerable<AppointmentModel.SearchResponse>> GetAppointmentsByDate(DateTime date);
+        Task<Pagination<AppointmentModel.SearchResponse>> GetAppointmentsByDate(DateTime date, int pageSize, int pageIndex);
         Task<Pagination<AppointmentModel.SearchResponse>> SearchAppointments(Guid? specialtyId, Guid? doctorId, long? dni, DateTime? date, int pageSize, int pageIndex);
     }
 }
