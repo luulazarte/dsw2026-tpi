@@ -125,15 +125,22 @@ namespace Dsw2026Tpi.Application.Services
                 pageIndex,
                 a => a.AvailabilitySlot != null && a.AvailabilitySlot.SlotDate == date.Date,
                 a => a.AvailabilitySlot.SlotDate,
-                "AvailabilitySlot", "AvailabilitySlot.AvailabilityRule.Doctor.Speciality"
+               "AvailabilitySlot", "AvailabilitySlot.AvailabilityRule.Doctor.Speciality", "Patient"
             );
 
             return pagedData.Map(a => new AppointmentModel.SearchResponse(
-                a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Speciality?.Name ?? "N/A",
-                a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Name ?? "N/A",
-                a.AvailabilitySlot.SlotDate,
-                a.AvailabilitySlot.StartTime
-            ));
+              a.Id,
+              a.Status.ToString(),
+              new AppointmentModel.SearchPatientDto(
+                  a.Patient?.Dni ?? "N/A",
+                  a.Patient?.FullName ?? "N/A"),
+              new AppointmentModel.SearchDoctorDto(
+                  a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Id ?? Guid.Empty,
+                  a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Name ?? "N/A",
+                  new AppointmentModel.SearchSpecialtyDto(
+                      a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Speciality?.Id ?? Guid.Empty,
+                      a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Speciality?.Name ?? "N/A"))
+          ));
         }
 
         public async Task<Pagination<AppointmentModel.SearchResponse>> SearchAppointments(Guid? specialtyId, Guid? doctorId, long? dni, DateTime? date, int pageSize, int pageIndex)
@@ -153,11 +160,18 @@ namespace Dsw2026Tpi.Application.Services
             );
 
             return pagedData.Map(a => new AppointmentModel.SearchResponse(
-                a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Speciality?.Name ?? "N/A",
-                a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Name ?? "N/A",
-                a.AvailabilitySlot.SlotDate,
-                a.AvailabilitySlot.StartTime
-            ));
+               a.Id,
+               a.Status.ToString(),
+               new AppointmentModel.SearchPatientDto(
+                   a.Patient?.Dni ?? "N/A",
+                   a.Patient?.FullName ?? "N/A"),
+               new AppointmentModel.SearchDoctorDto(
+                   a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Id ?? Guid.Empty,
+                   a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Name ?? "N/A",
+                   new AppointmentModel.SearchSpecialtyDto(
+                       a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Speciality?.Id ?? Guid.Empty,
+                       a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Speciality?.Name ?? "N/A"))
+           ));
         }
     }
 }
