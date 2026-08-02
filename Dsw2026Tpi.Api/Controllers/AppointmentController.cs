@@ -33,15 +33,15 @@ namespace Dsw2026Tpi.Api.Controllers
         }
 
         [HttpGet("patient")]
-            [Authorize(Policy = Policies.AdminPolicy)]
+        [Authorize(Policy = Policies.PatientPolicy)]
         public async Task<IActionResult> GetPatientAppointments([FromQuery] long dni)
             {
             var result = await _appointmentService.GetByPatientDni(dni);
             return Ok(result);
             }
 
-            [HttpDelete("{id:guid}")]
-            [Authorize(Policy = Policies.AdminPolicy)]
+        [HttpDelete("{id:guid}")]
+        [Authorize(Policy = Policies.PatientPolicy)]
         public async Task<IActionResult> Cancel(Guid id)
             {
                 
