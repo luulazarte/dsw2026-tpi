@@ -51,15 +51,15 @@ namespace Dsw2026Tpi.Api.Controllers
                 
             }
 
-            [HttpGet]
-            [Authorize(Policy = Policies.AdminPolicy)]
-        public async Task<IActionResult> GetByDate([FromQuery] DateTime date)
-            {
-                var result = await _appointmentService.GetAppointmentsByDate(date);
-                return Ok(result);
-            }
+        [HttpGet]
+        [Authorize(Policy = Policies.AdminPolicy)]
+        public async Task<IActionResult> GetByDate([FromQuery] DateTime date, [FromQuery] int pageSize = 10, [FromQuery] int pageIndex = 0)
+        {
+            var result = await _appointmentService.GetAppointmentsByDate(date, pageSize, pageIndex);
+            return Ok(result);
+        }
 
-            [HttpGet("search")]
+        [HttpGet("search")]
             [Authorize(Policy = Policies.AdminPolicy)]
         public async Task<IActionResult> Search([FromQuery] Guid? specialtyId, [FromQuery] Guid? doctorId, [FromQuery] long? dni, [FromQuery] DateTime? date, [FromQuery] int pageSize = 10, [FromQuery] int pageIndex = 0)
             {
