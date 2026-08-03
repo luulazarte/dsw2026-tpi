@@ -5,6 +5,7 @@ using Dsw2026Tpi.CrossCutting.Resources;
 using Dsw2026Tpi.Domain.Entities;
 using Dsw2026Tpi.Domain.Enums;
 using Dsw2026Tpi.Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,6 +16,7 @@ namespace Dsw2026Tpi.Application.Services
     public class AvailabilityService : IAvailabilityService
     {
         private readonly IPersistence _persistence;
+        private readonly ILogger<AvailabilityService> _logger;
 
         private readonly Dictionary<string, DayOfWeek> _diasSemana = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -29,9 +31,10 @@ namespace Dsw2026Tpi.Application.Services
             { "Sábado", DayOfWeek.Saturday }
         };
 
-        public AvailabilityService(IPersistence persistence)
+        public AvailabilityService(IPersistence persistence, ILogger<AvailabilityService> logger)
         {
             _persistence = persistence;
+            _logger = logger;
         }
 
         public async Task<List<AvailabilityModel.Response>> Create(AvailabilityModel.Request request)
@@ -84,12 +87,21 @@ namespace Dsw2026Tpi.Application.Services
             foreach (var regla in reglas)
             {
                 foreach (var slot in regla.Slots.ToList())
-                    await _persistence.Delete(slot);
+                {
+                
+                    bool esFuturo = slot.SlotDate.Date >= hoy;
+                    bool estaDisponible = slot.Status == SlotStatus.AVAILABLE;
 
-                await _persistence.Delete(regla);
+                    if (esFuturo && estaDisponible)
+                        await _persistence.Delete(slot);
+                }
+
+                var slotsRestantes = regla.Slots.Count(s => !(s.SlotDate.Date >= hoy && s.Status == SlotStatus.AVAILABLE));
+                if (slotsRestantes == 0)
+                    await _persistence.Delete(regla);
             }
         }
-
+        
         private async Task<List<AvailabilityModel.Response>> GenerarDisponibilidades(
             AvailabilityModel.Request request, Doctor doctor)
         {
@@ -154,7 +166,8 @@ namespace Dsw2026Tpi.Application.Services
                     fechaIteracion = fechaIteracion.AddDays(1);
                 }
             }
-
+            _logger.LogInformation("Disponibilidad generada para el doctor {DoctorId}. Slots creados: {Cantidad}",
+              doctor.Id, response.Count);
             return response;
         }
 

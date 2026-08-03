@@ -95,6 +95,12 @@ public class AuthenticationService : IAuthenticationService
 
             _logger.LogInformation("Paciente creado automáticamente: {Email}", request.Email);
         }
+        else
+        {
+            var patientExistente = await _persistence.First<Patient>(p => p.Dni == dniStr);
+            if (patientExistente == null)
+                throw new ValidationException("Los datos del paciente no coinciden.", nameof(ErrorCodes.VALIDATION_ERROR));
+        }
 
         var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
         if (role != Roles.Patient)

@@ -4,9 +4,8 @@ using Dsw2026Tpi.CrossCutting.Exceptions;
 using Dsw2026Tpi.CrossCutting.Resources;
 using Dsw2026Tpi.Domain.Entities;
 using Dsw2026Tpi.Domain.Enums;
-using Dsw2026Tpi.CrossCutting.Exceptions;
-using Dsw2026Tpi.CrossCutting.Resources;
 using Dsw2026Tpi.Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,10 +15,12 @@ namespace Dsw2026Tpi.Application.Services
     public class AppointmentService : IAppointmentService
     {
         private readonly IPersistence _persistence;
+        private readonly ILogger<AppointmentService> _logger;
 
-        public AppointmentService(IPersistence persistence)
+        public AppointmentService(IPersistence persistence, ILogger<AppointmentService> logger)
         {
             _persistence = persistence;
+            _logger = logger;
         }
 
         public async Task<AppointmentModel.PatientResponse> Create(AppointmentModel.Request request)
@@ -32,7 +33,7 @@ namespace Dsw2026Tpi.Application.Services
             if (string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Length < 5)
                 throw new ValidationException("El motivo debe tener al menos 5 caracteres.", nameof(ErrorCodes.VALIDATION_ERROR));
 
-            var doctor = await _persistence.GetById<Doctor>(request.DoctorId);
+            var doctor = await _persistence.GetById<Doctor>(request.DoctorId, "Speciality");
             if (doctor == null || doctor.Deleted)
                 throw new ValidationException("El doctor especificado no existe.", nameof(ErrorCodes.VALIDATION_ERROR));
 
@@ -48,7 +49,7 @@ namespace Dsw2026Tpi.Application.Services
                 throw new ValidationException("No se permiten turnos en el pasado.", nameof(ErrorCodes.VALIDATION_ERROR));
 
             if (slot.Status != SlotStatus.AVAILABLE)
-                throw new ConflictException("APPOINTMENT_CONFLICT", "Slot already booked");
+                throw new ConflictException(nameof(ErrorCodes.APPOINTMENT_CONFLICT), ErrorCodes.APPOINTMENT_CONFLICT);
 
             var appointment = new Appointment(slot.Id, patient.Id, request.Reason);
             await _persistence.Add(appointment);
@@ -56,6 +57,8 @@ namespace Dsw2026Tpi.Application.Services
 
             slot.Book();
             await _persistence.Update(slot);
+            _logger.LogInformation("Turno reservado. Paciente DNI: {Dni}, Doctor: {DoctorId}, Slot: {SlotId}",
+               dniStr, request.DoctorId, request.AvailabilitySlotId);
 
 
             return new AppointmentModel.PatientResponse(
@@ -87,7 +90,9 @@ namespace Dsw2026Tpi.Application.Services
                 slot.Release();
                 await _persistence.Update(slot);
             }
+            _logger.LogInformation("Turno cancelado. Id: {AppointmentId}", id);
         }
+        
 
         public async Task<IEnumerable<AppointmentModel.PatientResponse>> GetByPatientDni(long dni)
         {
@@ -132,8 +137,8 @@ namespace Dsw2026Tpi.Application.Services
               a.Id,
               a.Status.ToString(),
               new AppointmentModel.SearchPatientDto(
-                  a.Patient?.Dni ?? "N/A",
-                  a.Patient?.FullName ?? "N/A"),
+              a.Patient?.Dni ?? "N/A",
+              ""),
               new AppointmentModel.SearchDoctorDto(
                   a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Id ?? Guid.Empty,
                   a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Name ?? "N/A",
@@ -163,8 +168,8 @@ namespace Dsw2026Tpi.Application.Services
                a.Id,
                a.Status.ToString(),
                new AppointmentModel.SearchPatientDto(
-                   a.Patient?.Dni ?? "N/A",
-                   a.Patient?.FullName ?? "N/A"),
+               a.Patient?.Dni ?? "N/A",
+               ""),
                new AppointmentModel.SearchDoctorDto(
                    a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Id ?? Guid.Empty,
                    a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Name ?? "N/A",
