@@ -1,12 +1,13 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Linq.Expressions;
-using Dsw2026Tpi.Application.Dtos;
+﻿using Dsw2026Tpi.Application.Dtos;
 using Dsw2026Tpi.Application.Services;
 using Dsw2026Tpi.Domain.Entities;
 using Dsw2026Tpi.Domain.Enums;
 using Dsw2026Tpi.Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
+using System;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Dsw2026Tpi.Tests;
@@ -14,6 +15,7 @@ namespace Dsw2026Tpi.Tests;
 public class AppointmentServiceTests
 {
     private readonly IPersistence _persistence = Substitute.For<IPersistence>();
+    private readonly ILogger<AppointmentService> _logger = Substitute.For<ILogger<AppointmentService>>();
 
     [Fact]
     public async Task Create_CuandoElTurnoEsEnElPasado_EntoncesLanzaExcepcion()
@@ -31,8 +33,7 @@ public class AppointmentServiceTests
         _persistence.First<Patient>(Arg.Any<Expression<Func<Patient, bool>>>()).Returns(patient);
         _persistence.GetById<AvailabilitySlot>(slotId).Returns(slotPasado);
 
-        var service = new AppointmentService(_persistence);
-
+        var service = new AppointmentService(_persistence, _logger);
         var request = new AppointmentModel.Request(
             doctorId, slotId, new AppointmentModel.PatientDto(40123456), "Control de rutina");
 
@@ -55,8 +56,7 @@ public class AppointmentServiceTests
         _persistence.First<Patient>(Arg.Any<Expression<Func<Patient, bool>>>()).Returns(patient);
         _persistence.GetById<AvailabilitySlot>(slotId).Returns(slotOcupado);
 
-        var service = new AppointmentService(_persistence);
-
+        var service = new AppointmentService(_persistence, _logger);
         var request = new AppointmentModel.Request(
             doctorId, slotId, new AppointmentModel.PatientDto(40123456), "Control de rutina");
 
@@ -79,8 +79,7 @@ public class AppointmentServiceTests
         _persistence.First<Patient>(Arg.Any<Expression<Func<Patient, bool>>>()).ReturnsForAnyArgs(patient);
         _persistence.GetById<AvailabilitySlot>(Arg.Any<Guid>()).ReturnsForAnyArgs(slotOk);
 
-        var service = new AppointmentService(_persistence);
-
+        var service = new AppointmentService(_persistence, _logger);
         var request = new AppointmentModel.Request(
             doctorId, slotId, new AppointmentModel.PatientDto(40123456), "Control de rutina");
 
@@ -98,8 +97,7 @@ public class AppointmentServiceTests
         Doctor? doctorInexistente = null;
         _persistence.GetById<Doctor>(doctorId).Returns(doctorInexistente);
 
-        var service = new AppointmentService(_persistence);
-
+        var service = new AppointmentService(_persistence, _logger);
         var request = new AppointmentModel.Request(
             doctorId, slotId, new AppointmentModel.PatientDto(40123456), "Control de rutina");
 
