@@ -1,12 +1,12 @@
-##### Sistema de Turnos Médicos — Backend
+### Sistema de Turnos Médicos — Backend
 
 
-##### TPI de Desarrollo de Software 2026 — UTN FRT.
+#### TPI de Desarrollo de Software 2026 — UTN FRT.
 
 
 ##### API REST para gestionar turnos médicos: médicos, especialidades, disponibilidades y reserva/cancelación de turnos. 
 
-##### Integrantes
+#### Integrantes
 
 
 ##### Arias Thillois, Nazarena — 58280 - 3K4
@@ -18,32 +18,32 @@
 ##### Romero Scro, Martina — 58090 - 3K2
 
 
-##### Cómo ejecutarlo
+#### Cómo ejecutarlo
 
 
 ##### 1. Clonar el repositorio y pararse en la rama "development":
 
-##### git clone https://github.com/luulazarte/dsw2026-tpi.git
+##### *git clone https://github.com/luulazarte/dsw2026-tpi.git*
 
-##### cd dsw2026-tpi
+##### *cd dsw2026-tpi*
 
-##### git checkout development
+##### *git checkout development*
 
 
 ##### 2. Abrir "Dsw2026Tpi.slnx" en Visual Studio, poner "Dsw2026Tpi.Api" como proyecto de inicio y ejecuta
 
-##### Swagger nos lleva a "https://localhost:5278/swagger".
+##### Swagger nos lleva a *"https://localhost:5278/swagger"*
 
 
 ##### Admin inicial: "admin@system.com" / "Admin1234"
 
 
-##### Autenticación
+#### Autenticación
 
 
 ##### El sistema maneja dos roles: Administrador y Paciente. Cuando cualquiera de los dos inicia sesión, se genera un token JWT. Ese token es la llave para los endpoints que tenga permitido cada rol y hay que mandarlo en el header (Authorization: Bearer <token>).
 
-##### Endpoints
+#### Endpoints
 
 ##### **Auth** (/api/auth)
 
@@ -104,7 +104,7 @@
 ##### Los feriados se cargan desde `Dsw2026Tpi.Data/Sources/feriados.json`.
 
 
-##### Pruebas
+#### Pruebas
 
 
 ##### Las pruebas unitarias (xUnit + NSubstitute) están en `Dsw2026Tpi.Tests`. 
