@@ -117,7 +117,7 @@ namespace Dsw2026Tpi.Application.Services
                 a.AvailabilitySlot.SlotDate,
                 a.AvailabilitySlot.StartTime,
                 a.AvailabilitySlot.AvailabilityRule?.Doctor?.Name ?? "N/A",
-                "N/A", 
+                a.AvailabilitySlot.AvailabilityRule?.Doctor?.Speciality?.Name ?? "N/A",
                 a.Status
             ));
         }
@@ -144,7 +144,9 @@ namespace Dsw2026Tpi.Application.Services
                   a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Name ?? "N/A",
                   new AppointmentModel.SearchSpecialtyDto(
                       a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Speciality?.Id ?? Guid.Empty,
-                      a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Speciality?.Name ?? "N/A"))
+                      a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Speciality?.Name ?? "N/A")),
+                      a.AvailabilitySlot?.SlotDate,
+                      a.AvailabilitySlot?.StartTime
           ));
         }
 
@@ -175,7 +177,9 @@ namespace Dsw2026Tpi.Application.Services
                    a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Name ?? "N/A",
                    new AppointmentModel.SearchSpecialtyDto(
                        a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Speciality?.Id ?? Guid.Empty,
-                       a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Speciality?.Name ?? "N/A"))
+                       a.AvailabilitySlot?.AvailabilityRule?.Doctor?.Speciality?.Name ?? "N/A")),
+                       a.AvailabilitySlot?.SlotDate,
+                       a.AvailabilitySlot?.StartTime
            ));
         }
     }

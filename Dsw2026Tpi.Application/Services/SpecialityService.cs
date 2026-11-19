@@ -59,10 +59,10 @@ namespace Dsw2026Tpi.Application.Services
         public async Task Delete(Guid id)
         {
             var speciality = await _persistence.GetById<Speciality>(id);
-            if (speciality != null)
-            {
-                await _persistence.Delete(speciality);
-            }
+            if (speciality == null || speciality.Deleted)
+                throw new EntityNotFoundException("Especialidad");
+
+            await _persistence.Delete(speciality);
         }
 
         private static void ValidarDatos(SpecialityModel.Request request)

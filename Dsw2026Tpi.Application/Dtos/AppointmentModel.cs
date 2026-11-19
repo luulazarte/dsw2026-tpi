@@ -15,10 +15,12 @@ namespace Dsw2026Tpi.Application.Dtos
 
 
         public record SearchResponse(
-              Guid AppointmentsId,
-              string AppointmentsStatus,
-              SearchPatientDto Patient,
-              SearchDoctorDto Doctor);
+            Guid AppointmentsId,
+            string AppointmentsStatus,
+            SearchPatientDto Patient,
+            SearchDoctorDto Doctor,
+            DateTime? Date,
+            TimeSpan? StartTime);
 
         public record SearchPatientDto(string Dni, string FullName);
 

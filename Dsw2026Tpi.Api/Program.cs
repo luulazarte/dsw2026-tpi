@@ -49,7 +49,7 @@ public class Program
             var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = services.GetRequiredService<UserManager<Dsw2026Tpi.Data.Identity.ApplicationUser>>();
 
-            const string adminRole = "Administrador";
+            const string adminRole = "ADMINISTRADOR";
             const string adminEmail = "admin@system.com";
             const string adminPassword = "Admin1234";
 
