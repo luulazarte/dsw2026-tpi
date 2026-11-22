@@ -46,7 +46,6 @@ public class DoctorService : IDoctorService
           d => d.LicenseNumber == request.LicenseNumber && !d.Deleted);
         if (licenseInUse != null)
             throw new ValidationException("Ya existe un médico con ese número de matrícula.", nameof(ErrorCodes.VALIDATION_ERROR));
-
         var doctor = new Doctor(request.Name, request.LicenseNumber, request.SpecialityId);
         await _persistence.Add(doctor);
 
@@ -66,11 +65,7 @@ public class DoctorService : IDoctorService
         if (speciality == null || speciality.Deleted)
             throw new ValidationException("La especialidad especificada no existe.", nameof(ErrorCodes.VALIDATION_ERROR));
 
-        var licenseInUse = await _persistence.First<Doctor>(
-          d => d.LicenseNumber == request.LicenseNumber && d.Id != id && !d.Deleted);
-        if (licenseInUse != null)
-            throw new ValidationException("Ya existe un médico con ese número de matrícula.", nameof(ErrorCodes.VALIDATION_ERROR));
-
+        
         doctor.Update(request.Name, request.LicenseNumber, request.SpecialityId);
         await _persistence.Update(doctor);
 
